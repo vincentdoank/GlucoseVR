@@ -10,7 +10,7 @@ public class VRHandIKTargetFollower : MonoBehaviour
     [SerializeField] private Transform leftHandIKTarget;
     [SerializeField] private Transform rightHandIKTarget;
 
-    [Header("Offsets")]
+    [Header("Local Offsets")]
     [SerializeField] private Vector3 leftPositionOffset;
     [SerializeField] private Vector3 rightPositionOffset;
 
@@ -28,8 +28,11 @@ public class VRHandIKTargetFollower : MonoBehaviour
         if (leftController == null || leftHandIKTarget == null)
             return;
 
+        Vector3 worldOffset =
+            leftController.rotation * leftPositionOffset;
+
         leftHandIKTarget.position =
-            leftController.position + leftPositionOffset;
+            leftController.position + worldOffset;
 
         leftHandIKTarget.rotation =
             leftController.rotation *
@@ -41,8 +44,11 @@ public class VRHandIKTargetFollower : MonoBehaviour
         if (rightController == null || rightHandIKTarget == null)
             return;
 
+        Vector3 worldOffset =
+            rightController.rotation * rightPositionOffset;
+
         rightHandIKTarget.position =
-            rightController.position + rightPositionOffset;
+            rightController.position + worldOffset;
 
         rightHandIKTarget.rotation =
             rightController.rotation *

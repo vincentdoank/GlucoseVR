@@ -4,33 +4,45 @@ using UnityEngine.Animations.Rigging;
 public class AvatarSetup : MonoBehaviour
 {
     [Header("Tracking Anchors")]
-    [SerializeField] private Transform headAnchor;
+    [SerializeField] private Transform headAnchor;               // Main Camera
     [SerializeField] private Transform leftHandTargetTracker;
     [SerializeField] private Transform rightHandTargetTracker;
 
     [Header("XR References")]
     [SerializeField] private Transform xrOrigin;
-    [SerializeField] private Transform trackingSpace;
+    [SerializeField] private Transform trackingSpace;            // Camera Offset
 
     [Header("Avatar Root")]
-    [SerializeField] private Transform avatarRoot;
-    [SerializeField] private Transform headBone;
+    [SerializeField] private Transform avatarRoot;               // Body
+    [SerializeField] private Transform headBone;                // Avatar Head Bone
 
     [Header("Body Follow Settings")]
     [SerializeField] private float maxHeadYawBeforeTurn = 5f;
     [SerializeField] private float bodyTurnSpeed = 120f;
     [SerializeField] private bool followXZPosition = true;
 
-    [Header("Head Follow Offset")]
-    [SerializeField] private Vector3 headPositionOffset = Vector3.zero;
-    [SerializeField] private Vector3 headRotationOffset = Vector3.zero;
+    [Header("Face Alignment Offset")]
+    [Tooltip("Positive Z pushes avatar slightly backward so camera sits in front of face")]
+    [SerializeField] private Vector3 faceOffset = new Vector3(0f, 0f, 0.08f);
 
     [Header("Calibration")]
     [SerializeField] private float referenceHeight = 1.7f;
     [SerializeField] private bool autoCalibrateOnStart = true;
 
+    private Vector3 initialHeadToRootOffset;
+
     private void Start()
     {
+        if (avatarRoot == null || headBone == null)
+        {
+            Debug.LogError("Avatar Root or Head Bone is missing.");
+            return;
+        }
+
+        // Save the initial relative offset from head to body root
+        initialHeadToRootOffset =
+            avatarRoot.position - headBone.position;
+
         if (autoCalibrateOnStart)
         {
             Invoke(nameof(CalibrateHeight), 0.5f);
@@ -39,12 +51,11 @@ public class AvatarSetup : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (avatarRoot == null || headAnchor == null)
+        if (avatarRoot == null || headAnchor == null || headBone == null)
             return;
 
-        FollowPlayerPosition();
         RotateBodyTowardsHead();
-        FollowHeadBone();
+        FollowPlayerPosition();
     }
 
     private void FollowPlayerPosition()
@@ -52,10 +63,14 @@ public class AvatarSetup : MonoBehaviour
         if (!followXZPosition)
             return;
 
-        Vector3 targetPos = headAnchor.position;
-        targetPos.y = avatarRoot.position.y;
+        // Keep the camera slightly in front of avatar face
+        Vector3 rotatedFaceOffset =
+            headAnchor.rotation * faceOffset;
 
-        avatarRoot.position = targetPos;
+        avatarRoot.position =
+            headAnchor.position +
+            initialHeadToRootOffset -
+            rotatedFaceOffset;
     }
 
     private void RotateBodyTowardsHead()
@@ -74,7 +89,8 @@ public class AvatarSetup : MonoBehaviour
 
         if (Mathf.Abs(angle) > maxHeadYawBeforeTurn)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(headForward);
+            Quaternion targetRotation =
+                Quaternion.LookRotation(headForward);
 
             avatarRoot.rotation = Quaternion.RotateTowards(
                 avatarRoot.rotation,
@@ -84,20 +100,14 @@ public class AvatarSetup : MonoBehaviour
         }
     }
 
-    private void FollowHeadBone()
-    {
-        if (headBone == null)
-            return;
-
-        headBone.position = headAnchor.position + headPositionOffset;
-
-        headBone.rotation =
-            headAnchor.rotation *
-            Quaternion.Euler(headRotationOffset);
-    }
-
     public void CalibrateHeight()
     {
+        if (trackingSpace == null)
+        {
+            Debug.LogWarning("Tracking space is missing.");
+            return;
+        }
+
         float playerHeight =
             headAnchor.position.y - trackingSpace.position.y;
 
@@ -111,7 +121,7 @@ public class AvatarSetup : MonoBehaviour
         avatarRoot.localScale = Vector3.one * scale;
 
         Debug.Log(
-            $"Avatar calibrated. Height: {playerHeight:F2}, Scale: {scale:F2}"
+            $"Avatar calibrated. Height: {playerHeight:F2}m, Scale: {scale:F2}"
         );
     }
 }
