@@ -27,7 +27,7 @@ public class Phone : MonoBehaviour
         if (!other.CompareTag("Hand") || !isTapVisible)
             return;
 
-        OnTouchTriggered();
+        //OnTouchTriggered();
     }
 
     private void OnGrabbed(SelectEnterEventArgs args)
@@ -56,22 +56,18 @@ public class Phone : MonoBehaviour
     public void ShowTapIcon()
     {
         Debug.LogWarning("ShowTapIcon");
-        if (isTapVisible) return;
-
         isTapVisible = true;
 
         tapIconGo.SetActive(true);
         tapIconGo.transform.localScale = Vector3.zero;
 
         tapIconGo.transform
-            .DOScale(0.05f, 0.2f)
+            .DOScale(1f, 0.2f)
             .SetEase(Ease.OutBack).Play();
     }
 
     public void HideTapIcon()
     {
-        if (!isTapVisible) return;
-
         isTapVisible = false;
 
         tapIconGo.transform

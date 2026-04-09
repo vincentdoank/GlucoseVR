@@ -1,9 +1,13 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Divilab : MonoBehaviour
 {
     private bool showHighlight = false;
     public Custom.Outline.Outline[] outlines;
+
+    public UnityEvent onPhoneReachArea;
+    public UnityEvent onPhoneLeaveArea;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -15,6 +19,15 @@ public class Divilab : MonoBehaviour
                 Phone phone = other.GetComponent<Phone>();
                 phone.ShowTapIcon();
             }
+            onPhoneReachArea?.Invoke();
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.tag == "Phone")
+        {
+            onPhoneLeaveArea?.Invoke();
         }
     }
 
