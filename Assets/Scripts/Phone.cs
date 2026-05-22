@@ -10,6 +10,15 @@ public class Phone : MonoBehaviour
     private bool isTapVisible;
     private HandTouchController grabbingHand;
 
+    private Quaternion defaultRot;
+    private Vector3 defaultPos;
+
+    private void Start()
+    {
+        defaultRot = transform.rotation;
+        defaultPos = transform.position;
+    }
+
     private void OnEnable()
     {
         grabInteractable.selectEntered.AddListener(OnGrabbed);
@@ -80,5 +89,11 @@ public class Phone : MonoBehaviour
     {
         GameManager.Instance.ShowBluetoothIcon();
         HideTapIcon();
+    }
+
+    public void ResetPosition()
+    {
+        transform.rotation = defaultRot;
+        transform.position = defaultPos;
     }
 }

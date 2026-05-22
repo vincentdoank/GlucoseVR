@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 public class SnapArm : MonoBehaviour
 {
@@ -6,28 +7,39 @@ public class SnapArm : MonoBehaviour
     public GameObject placeholder;
     public GameObject realObject;
 
+    public string targetTag;
+    public bool hideRealObject = true;
+
+    public UnityEvent onItemSnapped;
+
     private void OnTriggerEnter(Collider other)
     {
-        if (other.tag == "PressureCuff")
+        if (other.tag == targetTag)
         {
             ShowSnappedCuff();
+            onItemSnapped?.Invoke();
         }
     }
 
     public void ShowSnappedCuff()
     {
-        snappedCuff.SetActive(true);
-        placeholder.SetActive(false);
-        realObject.SetActive(false);
+        if (snappedCuff)
+            snappedCuff.SetActive(true);
+        if (placeholder)
+            placeholder.SetActive(false);
+        if (realObject && hideRealObject)
+            realObject.SetActive(false);
     }
 
     public void HideSnappedCuff()
     {
-        snappedCuff.SetActive(false);
+        if(snappedCuff)
+            snappedCuff.SetActive(false);
     }
 
     public void ShowPlaceholder()
     {
-        placeholder.SetActive(true);
+        if(placeholder)
+            placeholder.SetActive(true);
     }
 }

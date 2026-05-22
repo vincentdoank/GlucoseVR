@@ -1,5 +1,6 @@
 using UnityEngine;
 using DG.Tweening;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -7,11 +8,18 @@ public class GameManager : MonoBehaviour
 
     private Tweener bluetoothIdle;
 
+    public VRScreenFade screenfade;
+
     public static GameManager Instance { get; private set; }
 
     private void Start()
     {
         Instance = this;
+    }
+
+    private void OnEnable()
+    {
+        screenfade.FadeIn(1);
     }
 
     public void ShowBluetoothIcon()
@@ -29,5 +37,10 @@ public class GameManager : MonoBehaviour
         bluetoothGo.transform.DOScale(0f, 0.2f).SetEase(Ease.InBack).OnComplete(() => {
             bluetoothGo.SetActive(false);
         }).Play();
+    }
+
+    public void ReloadScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

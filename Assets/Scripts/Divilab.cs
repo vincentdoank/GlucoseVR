@@ -13,13 +13,16 @@ public class Divilab : MonoBehaviour
     {
         if (other.tag == "Phone")
         {
+            Phone phone = other.GetComponentInParent<Phone>();
+
+            if (phone == null) return;
+            Debug.Log("phone : " + other.name, other.gameObject);
             if (!showHighlight)
             {
-                Highlight();
-                Phone phone = other.GetComponent<Phone>();
-                phone.ShowTapIcon();
+                Highlight(); 
             }
             onPhoneReachArea?.Invoke();
+            phone.ShowTapIcon();
         }
     }
 
@@ -27,6 +30,9 @@ public class Divilab : MonoBehaviour
     {
         if (other.tag == "Phone")
         {
+            Phone phone = other.GetComponentInParent<Phone>();
+
+            if (phone == null) return;
             onPhoneLeaveArea?.Invoke();
         }
     }

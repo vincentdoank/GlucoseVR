@@ -9,6 +9,11 @@ TagManager:
   - Hand
   - Arm
   - PressureCuff
+  - LeftHand
+  - RightHand
+  - Pen
+  - Strip
+  - InsertedStrip
   layers:
   - Default
   - TransparentFX
@@ -16,7 +21,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - Character
   - 
   - 
   - 

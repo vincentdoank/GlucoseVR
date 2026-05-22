@@ -3,6 +3,17 @@ using UnityEngine.Animations.Rigging;
 
 public class AvatarSetup : MonoBehaviour
 {
+
+    [Header("Sitting")]
+    [SerializeField] private bool allowSitting = true;
+    [SerializeField] private float sittingFollowStrength = 0.8f;
+
+    private float standingHeadY;
+    private float initialRootY;
+
+    [Header("Body Height Offset")]
+    [SerializeField] private float bodyVerticalOffset = -0.15f;
+
     [Header("Tracking Anchors")]
     [SerializeField] private Transform headAnchor;               // Main Camera
     [SerializeField] private Transform leftHandTargetTracker;
@@ -29,6 +40,7 @@ public class AvatarSetup : MonoBehaviour
     [SerializeField] private float referenceHeight = 1.7f;
     [SerializeField] private bool autoCalibrateOnStart = true;
 
+
     private Vector3 initialHeadToRootOffset;
 
     private void Start()
@@ -39,9 +51,11 @@ public class AvatarSetup : MonoBehaviour
             return;
         }
 
-        // Save the initial relative offset from head to body root
         initialHeadToRootOffset =
             avatarRoot.position - headBone.position;
+
+        initialRootY = avatarRoot.position.y;
+        standingHeadY = headAnchor.position.y;
 
         if (autoCalibrateOnStart)
         {
@@ -63,14 +77,40 @@ public class AvatarSetup : MonoBehaviour
         if (!followXZPosition)
             return;
 
-        // Keep the camera slightly in front of avatar face
-        Vector3 rotatedFaceOffset =
-            headAnchor.rotation * faceOffset;
+        Vector3 flatForward = headAnchor.forward;
+        flatForward.y = 0f;
 
-        avatarRoot.position =
+        if (flatForward.sqrMagnitude < 0.001f)
+            flatForward = avatarRoot.forward;
+
+        Quaternion yawRotation =
+            Quaternion.LookRotation(flatForward, Vector3.up);
+
+        Vector3 rotatedFaceOffset =
+            yawRotation * faceOffset;
+
+        Vector3 targetPosition =
             headAnchor.position +
             initialHeadToRootOffset -
             rotatedFaceOffset;
+
+        if (allowSitting)
+        {
+            float heightDelta =
+                headAnchor.position.y - standingHeadY;
+
+            targetPosition.y =
+                initialRootY +
+                heightDelta * sittingFollowStrength +
+                bodyVerticalOffset;
+        }
+        else
+        {
+            targetPosition.y =
+                initialRootY + bodyVerticalOffset;
+        }
+
+        avatarRoot.position = targetPosition;
     }
 
     private void RotateBodyTowardsHead()
@@ -118,7 +158,7 @@ public class AvatarSetup : MonoBehaviour
         }
 
         float scale = playerHeight / referenceHeight;
-        avatarRoot.localScale = Vector3.one * scale;
+        //avatarRoot.localScale = Vector3.one * scale;
 
         Debug.Log(
             $"Avatar calibrated. Height: {playerHeight:F2}m, Scale: {scale:F2}"
